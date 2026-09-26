@@ -38,3 +38,17 @@ def test_duplicate_alias_rejected():
 def test_unknown_code_returns_404():
     c = client()
     assert c.get("/zzzzzz").status_code == 404
+
+
+def test_invalid_expiry_rejected():
+    c = client()
+    res = c.post("/shorten", data={"url": "https://example.com", "expires_in": "-5"})
+    assert res.status_code == 400
+
+
+def test_valid_expiry_accepted():
+    c = client()
+    res = c.post("/shorten", data={"url": "https://example.com", "alias": "temp", "expires_in": "60"})
+    assert res.status_code == 302
+    data = c.get("/api/links").json
+    assert data[0]["expires_at"] is not None
