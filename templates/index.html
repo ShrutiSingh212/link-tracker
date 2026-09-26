@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head><title>Link Tracker</title></head>
+<body>
+  <h1>Link Tracker</h1>
+  <form method="POST" action="/shorten">
+    <input name="url" placeholder="https://example.com/long/link" required>
+    <input name="alias" placeholder="Custom alias (optional)">
+    <button>Shorten</button>
+  </form>
+  <table border="1">
+    <tr><th>Short</th><th>Original</th><th>Clicks</th></tr>
+    {% for l in links %}
+    <tr>
+      <td><a href="/{{ l.code }}">/{{ l.code }}</a></td>
+      <td>{{ l.url }}</td>
+      <td>{{ l.clicks }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  <footer>commit {{ commit }}</footer>
+</body>
+</html>
