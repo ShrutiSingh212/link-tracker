@@ -52,3 +52,4 @@ def test_valid_expiry_accepted():
     assert res.status_code == 302
     data = c.get("/api/links").json
     assert data[0]["expires_at"] is not None
+    
