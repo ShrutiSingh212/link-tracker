@@ -1,13 +1,14 @@
 import os
 import re
 import secrets
+from datetime import datetime, timedelta
 from urllib.parse import urlparse
 
 from flask import Flask, render_template, request, redirect, jsonify, abort
 
 app = Flask(__name__)
 
-links = {}  # code -> {"code", "url", "clicks"}
+links = {}  # code -> {"code", "url", "clicks", "expires_at"}
 RESERVED = {"api", "health", "shorten", "static"}
 ALIAS_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
 COMMIT = os.getenv("RENDER_GIT_COMMIT", "local")[:7]
@@ -50,7 +51,19 @@ def shorten():
     else:
         code = make_code()
 
-    links[code] = {"code": code, "url": url, "clicks": 0}
+    minutes = request.form.get("expires_in", "").strip()
+    expires_at = None
+    if minutes:
+        if not minutes.isdigit() or int(minutes) <= 0:
+            return "Expiry must be a positive number of minutes", 400
+        expires_at = datetime.utcnow() + timedelta(minutes=int(minutes))
+
+    links[code] = {
+        "code": code,
+        "url": url,
+        "clicks": 0,
+        "expires_at": expires_at.isoformat() if expires_at else None,
+    }
     return redirect("/")
 
 
@@ -69,6 +82,8 @@ def go(code):
     link = links.get(code)
     if not link:
         abort(404, "Short link not found")
+    if link["expires_at"] and datetime.fromisoformat(link["expires_at"]) < datetime.utcnow():
+        abort(410, "This link has expired")
     link["clicks"] += 1
     return redirect(link["url"])
 

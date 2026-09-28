@@ -6,6 +6,7 @@
   <form method="POST" action="/shorten">
     <input name="url" placeholder="https://example.com/long/link" required>
     <input name="alias" placeholder="Custom alias (optional)">
+    <input name="expires_in" type="number" min="1" placeholder="Expires in (minutes, optional)">
     <button>Shorten</button>
   </form>
   <table border="1">
